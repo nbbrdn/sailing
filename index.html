@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Курсы яхты</title>
+    <style>
+      body {
+        text-align: center;
+        background: #eef;
+        font-family: sans-serif;
+      }
+      canvas {
+        border: 1px solid #ccc;
+        margin-top: 20px;
+        background: #aee;
+      }
+      button {
+        margin: 10px 5px;
+        font-size: 16px;
+        padding: 10px 15px;
+        cursor: pointer;
+      }
+      #angle-display {
+        margin-top: 10px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Курс яхты относительно ветра</h2>
+    <canvas id="canvas" width="400" height="400"></canvas><br />
+    <div id="angle-display">Курс относительно ветра: 0° (Галс: Левый)</div>
+
+    <div id="course-buttons">
+      <button onclick="checkCourse('Левентик')">Левентик</button>
+      <button onclick="checkCourse('Бейдевинд крутой')">
+        Бейдевинд крутой
+      </button>
+      <button onclick="checkCourse('Бейдевинд')">Бейдевинд</button>
+      <button onclick="checkCourse('Галфвинд')">Галфвинд</button>
+      <button onclick="checkCourse('Бакштаг крутой')">Бакштаг крутой</button>
+      <button onclick="checkCourse('Бакштаг полный')">Бакштаг полный</button>
+      <button onclick="checkCourse('Фордевинд')">Фордевинд</button>
+    </div>
+    <hr />
+    <div>
+      <button onclick="spinYacht()">Случайный курс</button>
+    </div>
+    <div>
+      <button onclick="">Увалиться</button>
+      <button onclick="">Привестись</button>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const angleDisplay = document.getElementById("angle-display");
+
+      let yachtAngle = 0;
+      let spinning = false;
+      const windAngle = 0; // ветер сверху (0 градусов)
+
+      function drawScene() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        drawSegmentedArc();
+        drawWindArrow();
+        drawRumbs();
+
+        let relative = (yachtAngle - windAngle + 2 * Math.PI) % (2 * Math.PI);
+        let relativeDeg = (relative * 180) / Math.PI;
+        const tack = relativeDeg > 180 ? "Правый" : "Левый";
+
+        angleDisplay.textContent = `Курс относительно ветра: ${relativeDeg.toFixed(
+          0
+        )}° (Галс: ${tack})`;
+
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(yachtAngle);
+        drawYacht();
+        ctx.restore();
+      }
+
+      function drawSegmentedArc() {
+        const radius = 150;
+        const innerRadius = 140;
+        const segments = 32;
+        const angleStep = (2 * Math.PI) / segments;
+
+        for (let i = 0; i < segments; i++) {
+          const startAngle = i * angleStep - Math.PI / 2;
+          const endAngle = startAngle + angleStep;
+
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+          ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true);
+          ctx.closePath();
+          ctx.fillStyle = i % 2 === 0 ? "black" : "white";
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      function drawWindArrow() {
+        const arrowY = centerY - 150;
+        const arrowLength = 30;
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, arrowY);
+        ctx.lineTo(centerX, arrowY + arrowLength);
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, arrowY + arrowLength);
+        ctx.lineTo(centerX - 8, arrowY + arrowLength - 10);
+        ctx.lineTo(centerX + 8, arrowY + arrowLength - 10);
+        ctx.closePath();
+        ctx.fillStyle = "red";
+        ctx.fill();
+
+        ctx.fillStyle = "black";
+        ctx.font = "14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Ветер", centerX, arrowY - 30);
+      }
+
+      function drawYacht() {
+        ctx.beginPath();
+        ctx.moveTo(0, -60);
+        ctx.lineTo(-15, 20);
+        ctx.lineTo(15, 20);
+        ctx.closePath();
+        ctx.fillStyle = "#333";
+        ctx.fill();
+      }
+
+      function drawRumbs() {
+        const radius = 150;
+        for (let deg = 0; deg < 360; deg += 45) {
+          const angle = ((deg - 90) * Math.PI) / 180;
+          const labelX = centerX + (radius + 15) * Math.cos(angle);
+          const labelY = centerY + (radius + 15) * Math.sin(angle);
+          ctx.fillStyle = "black";
+          ctx.font = "12px sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(`${deg}°`, labelX, labelY);
+        }
+      }
+
+      function spinYacht() {
+        if (spinning) return;
+
+        spinning = true;
+        const targetAngle = Math.random() * 2 * Math.PI;
+        const startAngle = yachtAngle;
+        const spinTime = 2000;
+        const startTime = performance.now();
+
+        document.querySelectorAll("#course-buttons button").forEach((btn) => {
+          btn.style.backgroundColor = "";
+          btn.disabled = false;
+        });
+
+        function animate(time) {
+          const elapsed = time - startTime;
+          const progress = Math.min(elapsed / spinTime, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          yachtAngle = startAngle + (targetAngle - startAngle) * eased;
+          drawScene();
+
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            spinning = false;
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      function getCurrentCourseName() {
+        let relative = (yachtAngle - windAngle + 2 * Math.PI) % (2 * Math.PI);
+        let deg = (relative * 180) / Math.PI;
+
+        if (deg < 11.25 || deg >= 348.75) return "Левентик";
+        if ((deg >= 11.25 && deg < 33.75) || (deg >= 326.25 && deg < 348.75))
+          return "Бейдевинд крутой";
+        if ((deg >= 33.75 && deg < 78.75) || (deg >= 281.25 && deg < 326.25))
+          return "Бейдевинд";
+        if ((deg >= 78.75 && deg < 101.25) || (deg >= 258.75 && deg < 281.25))
+          return "Галфвинд";
+        if ((deg >= 101.25 && deg < 146.25) || (deg >= 213.75 && deg < 258.75))
+          return "Бакштаг крутой";
+        if ((deg >= 146.25 && deg < 168.75) || (deg >= 191.25 && deg < 213.75))
+          return "Бакштаг полный";
+        if (deg >= 168.75 && deg < 191.25) return "Фордевинд";
+      }
+
+      function checkCourse(selected) {
+        const actual = getCurrentCourseName();
+
+        document.querySelectorAll("#course-buttons button").forEach((btn) => {
+          btn.disabled = true;
+          const label = btn.textContent;
+
+          if (label === selected) {
+            btn.style.backgroundColor = label === actual ? "#8f8" : "#f88";
+          } else if (label === actual && selected !== actual) {
+            btn.style.backgroundColor = "#8f8";
+          } else {
+            btn.style.backgroundColor = "";
+          }
+        });
+      }
+
+      drawScene();
+    </script>
+  </body>
+</html>
