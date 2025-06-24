@@ -32,6 +32,10 @@
     <canvas id="canvas" width="400" height="400"></canvas><br />
     <div id="angle-display">Курс относительно ветра: 0° (Галс: Левый)</div>
 
+    <div>
+      <button onclick="spinYacht()">Случайный курс</button>
+    </div>
+
     <div id="course-buttons">
       <button onclick="checkCourse('Левентик')">Левентик</button>
       <button onclick="checkCourse('Бейдевинд крутой')">
@@ -44,13 +48,6 @@
       <button onclick="checkCourse('Фордевинд')">Фордевинд</button>
     </div>
     <hr />
-    <div>
-      <button onclick="spinYacht()">Случайный курс</button>
-    </div>
-    <div>
-      <button onclick="">Увалиться</button>
-      <button onclick="">Привестись</button>
-    </div>
 
     <script>
       const canvas = document.getElementById("canvas");
