@@ -2,28 +2,61 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Курсы яхты</title>
     <style>
       body {
         text-align: center;
         background: #eef;
         font-family: sans-serif;
+        margin: 0;
+        padding: 0;
       }
+
+      h2 {
+        margin-top: 1rem;
+      }
+
       canvas {
         border: 1px solid #ccc;
-        margin-top: 20px;
         background: rgb(132, 192, 233);
+        max-width: 90vw;
+        height: auto;
+        margin-top: 20px;
       }
+
       button {
         margin: 10px 5px;
         font-size: 16px;
         padding: 10px 15px;
         cursor: pointer;
+        flex: 1 1 auto;
+        min-width: 120px;
       }
+
       #angle-display {
         margin-top: 10px;
         font-size: 18px;
         font-weight: bold;
+      }
+
+      #course-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 10px;
+        gap: 10px;
+      }
+
+      @media (max-width: 600px) {
+        button {
+          font-size: 14px;
+          padding: 8px 10px;
+        }
+
+        #angle-display {
+          font-size: 16px;
+        }
       }
     </style>
   </head>
